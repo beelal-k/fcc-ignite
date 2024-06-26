@@ -6,9 +6,8 @@ const ItemSchema = new mongoose.Schema(
     category: { type: String, required: true },
     images: { type: [String], required: true },
     videos: { type: [String], required: true },
-    businessId: {
-      type: String,
-    },
+    personsCapacity: { type: Number, required: true },
+    businessId: { type: mongoose.Schema.Types.ObjectId, ref: "Business", required: true },
     content: [
       {
         title: { type: String, required: true },
@@ -37,7 +36,7 @@ const ItemSchema = new mongoose.Schema(
         rating: { type: Number, required: true },
       },
     ],
-    available_dates: {
+    availableDates: {
       all_available: { type: Boolean, default: false },
       dates: { type: [Date], required: true },
     },

@@ -27,6 +27,13 @@ const AuthSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
     },
+    verificationToken: {
+      type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
     address: {
       type: String,
     },
@@ -44,10 +51,6 @@ const AuthSchema = new mongoose.Schema(
         type: String,
       },
     ],
-    forumCount: {
-      type: Number,
-      default: 0,
-    },
     cart: [
       {
         type: mongoose.Types.ObjectId,

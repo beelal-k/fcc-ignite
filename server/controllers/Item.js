@@ -1,8 +1,33 @@
 import Item from "../models/ItemModel.js";
 import AuthModel from "../models/Auth.js";
-import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 dotenv.config();
+import AWS from 'aws-sdk';
+
+dotenv.config();
+
+AWS.config.update({
+  accessKeyId: "AKIAU6GD3RAELOA5UNNQ",
+  secretAccessKey: "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",
+  region: 'us-east-1'
+});
+
+const comprehend = new AWS.Comprehend();
+
+export const moderateContent = async (text) => {
+  const params = {
+    TextList: [text],
+    LanguageCode: 'en'
+  };
+
+  const data = await comprehend.batchDetectSentiment(params).promise();
+  const sentiment = data.ResultList[0].SentimentScore;
+
+  if (sentiment.Negative > 0.5) {
+    return false;
+  }
+  return true;
+};
 
 export const createItem = async (req, res) => {
   const userId = req.userId;
@@ -22,11 +47,28 @@ export const createItem = async (req, res) => {
     content,
     location,
     price,
-    available_dates,
+    availableDates,
+    personsCapacity,
   } = req.body;
+
+  const isContentSafe = await moderateContent(title);
+  if (!isContentSafe) {
+    return res.status(400).send("Content is not safe");
+  }
+
+  if (
+    !title ||
+    !category ||
+    !images ||
+    !content ||
+    !location ||
+    !price ||
+    !availableDates ||
+    !personsCapacity
+  ) {
+    return res.status(400).send("All fields are required");
+  }
   try {
-    const cat = category;
-    category = category.toLowerCase().split(" ").join("-");
     const item = await Item.create({
       title,
       category,
@@ -35,38 +77,10 @@ export const createItem = async (req, res) => {
       businessId: user.businessId,
       content,
       location,
+      personsCapacity,
       price,
-      available_dates,
+      availableDates,
     });
-
-    const users = await AuthModel.find({ preferences: { $in: [cat] } });
-    console.log(`sending mails to ${users.length} users`);
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: "tbcgulfmarketing@gmail.com",
-        pass: "gyqj dwxp nrmo qobv",
-      },
-    });
-    {
-      users.map(async (user) => {
-        const mailOptions = {
-          from: "tbcgulfmarketing@gmail.com",
-          to: user.email,
-          subject: "New Tourist Attraction",
-          text: `
-        Hi ${user.name},
-        A new tourist attraction has been added to the ${cat} category.
-        `,
-        };
-        await transporter.sendMail(mailOptions);
-        user.notifications.push({
-          content: `A new tourist attraction has been added to the ${cat} category.`,
-          createdAt: new Date(),
-        });
-        await user.save();
-      });
-    }
     res.status(200).send(item);
   } catch (err) {
     console.log(err);
@@ -86,16 +100,115 @@ export const getMyItems = async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-}
+};
 
+export const updateItem = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      title,
+      category,
+      images,
+      videos,
+      content,
+      location,
+      price,
+      availableDates,
+      personsCapacity,
+    } = req.body;
+    if (
+      !title ||
+      !category ||
+      !images ||
+      !content ||
+      !location ||
+      !price ||
+      !availableDates ||
+      !personsCapacity
+    ) {
+      return res.status(400).send("All fields are required");
+    }
+
+    const item = await Item.findByIdAndUpdate(
+      id,
+      {
+        title,
+        category,
+        images,
+        videos,
+        content,
+        location,
+        price,
+        availableDates,
+        personsCapacity,
+      },
+      { new: true }
+    );
+    res.status(200).send(item);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
 
 export const getItems = async (req, res) => {
   try {
-    const cat = req.query.category;
-    const items = await Item.find(
-      cat ? (cat !== "all" ? { category: cat } : {}) : {}
-    );
+    const { region, checkIn, checkOut, guests, category } = req.query;
+    const filter = {};
+
+    // Filter by region
+    if (region) {
+      const formattedRegion = region.toLowerCase().replace(/\s+/g, "-");
+      filter["location.region"] = { $regex: formattedRegion, $options: "i" };
+    }
+
+    // Filter by guests
+    if (guests) {
+      filter["personsCapacity"] = { $gte: parseInt(guests, 10) };
+    }
+
+    // Filter by date range
+    if (checkIn && checkOut) {
+      filter.$and = [
+        { "availableDates.dates.0": { $lte: new Date(checkIn) } },
+        { "availableDates.dates.1": { $gte: new Date(checkIn) } },
+        { "availableDates.dates.0": { $lte: new Date(checkOut) } },
+        { "availableDates.dates.1": { $gte: new Date(checkOut) } },
+      ];
+    } else if (checkIn) {
+      filter.$and = [
+        { "availableDates.dates.0": { $lte: new Date(checkIn) } },
+        { "availableDates.dates.1": { $gte: new Date(checkIn) } },
+      ];
+    } else if (checkOut) {
+      filter.$and = [
+        { "availableDates.dates.0": { $lte: new Date(checkOut) } },
+        { "availableDates.dates.1": { $gte: new Date(checkOut) } },
+      ];
+    }
+
+    const items = await Item.find(filter).populate("businessId");
+
+    if (category) {
+      const filteredItems = items.filter(
+        (item) => item.category.toLowerCase().replace(/\s+/g, "-") === category
+      );
+      return res.status(200).send(filteredItems);
+    }
+
     res.status(200).send(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getItemsByCat = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const items = await Item.find();
+    const filteredItems = items.filter(
+      (item) => item.category.toLowerCase().replace(/\s+/g, "-") === category
+    );
+    res.status(200).send(filteredItems);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -104,10 +217,13 @@ export const getItems = async (req, res) => {
 export const getItem = async (req, res) => {
   try {
     const { id } = req.params;
-    let item = await Item.findById(id).populate({
-      path: "reviews.user_id",
-      select: "name _id picture email",
-    });
+    let item = await Item.findById(id)
+      .populate({
+        path: "reviews.user_id",
+        select: "name _id picture email",
+      })
+      .populate({ path: "businessId", populate: { path: "postedItems" } });
+
     if (!item) {
       return res.status(404).json({ error: "Item not found!" });
     }
@@ -118,13 +234,12 @@ export const getItem = async (req, res) => {
       return res.status(404).json({ error: "Seller not found!" });
     }
     item = item.toObject(); // Convert the mongoose document to a plain JavaScript object
-    item.sellerId = user._id; // Attach sellerId to the item
+    item.seller = user; // Attach sellerId to the item
     res.status(200).send(item);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 export const deleteItem = async (req, res) => {
   try {
@@ -243,14 +358,18 @@ export const generateSurprise = async (req, res) => {
     const pref = user.preferences;
     // parsing the categories
     const arr = [];
-    pref.forEach(element => {
-      arr.push(element.replace(/\s+/g, '-').toLowerCase());
+    pref.forEach((element) => {
+      arr.push(element.replace(/\s+/g, "-").toLowerCase());
     });
     const items = await Item.find();
     // filter once to get the right categories
-    const filteredItems = await items.filter((item) => arr.includes(item.category));
+    const filteredItems = await items.filter((item) =>
+      arr.includes(item.category)
+    );
     // filter again to get the right budget
-    const evenMoreFilteredItems = filteredItems.filter((item) => item.price <= budget);
+    const evenMoreFilteredItems = filteredItems.filter(
+      (item) => item.price <= budget
+    );
 
     res.status(200).send(evenMoreFilteredItems);
   } catch (err) {

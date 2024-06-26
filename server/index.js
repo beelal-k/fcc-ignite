@@ -3,7 +3,19 @@ import cors from "cors";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoutes.js";
+import businessRoutes from "./routes/businessRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
+import cartRoutes from "./routes/cartRoutes.js";
+import itemRoutes from "./routes/itemRoute.js";
+import forumRoutes from "./routes/forumRoutes.js";
+import replyRoutes from "./routes/replyRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
+import complaintRouter from "../server/routes/complaintRoutes.js";
+import botRoutes from "../server/routes/botRoutes.js";
+import conversationRoutes from "./routes/conversationRoutes.js";
+import messageRoutes from "./routes/messageRoutes.js";
 import { Server } from "socket.io";
 import http from "http";
 
@@ -15,14 +27,22 @@ app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://tourista-two.vercel.app"],
   })
 );
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5000,
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
+
+app.use(limiter);
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173"],
+    origin: ["http://localhost:5173", "https://tourista-two.vercel.app"],
     methods: ["GET", "POST"],
   },
 });
@@ -34,6 +54,8 @@ io.on("connection", (socket) => {
   socket.emit("me", socket.id);
 
   socket.on("sendMessage", (data) => {
+    console.log(data);
+    console.log(onlineUsers);
     const receiver = onlineUsers.find(
       (user) => user.userId === data.receiverId
     );
@@ -96,6 +118,17 @@ db.on("disconnected", () => {
 
 // ROUTES
 app.use("/auth", authRoutes);
+app.use("/item", itemRoutes);
+app.use("/business", businessRoutes);
+app.use("/order", orderRoutes);
+app.use("/cart", cartRoutes);
+app.use("/forum", forumRoutes);
+app.use("/reply", replyRoutes);
+app.use("/notification", notificationRoutes);
+app.use("/complaint", complaintRouter);
+app.use("/conversation", conversationRoutes);
+app.use("/message", messageRoutes);
+app.use("/bot", botRoutes);
 
 app.get("/", (req, res) => {
   res.send("Server is running!");
