@@ -274,6 +274,10 @@ export const getItemByBusiness = async (req, res) => {
 export const addReview = async (req, res) => {
   try {
     const { itemId, review, rating } = req.body;
+    const isContentSafe = await moderateContent(review);
+    if (!isContentSafe) {
+      return res.status(400).send("Content is not safe");
+    }
     const item = await Item.findByIdAndUpdate(
       itemId,
       {

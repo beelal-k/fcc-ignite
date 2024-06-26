@@ -63,7 +63,6 @@ const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) =>
             if (!res) {
                 throw new Error("An error occurred");
             }
-            console.log(res.data);
             toast({
                 title: "Added review",
                 description: "Successfully added a review"
@@ -72,10 +71,9 @@ const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) =>
             window.location.reload();
 
         } catch (error: any) {
-            console.log(error);
             toast({
                 title: "Error occurred",
-                description: "An error occurred while submitting review",
+                description: typeof error.response.data === "string" ? error.response.data : "An error occurred",
                 variant: "destructive"
             })
             return;

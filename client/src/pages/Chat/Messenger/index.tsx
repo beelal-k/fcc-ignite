@@ -113,7 +113,7 @@ const Messenger = ({ object }: { object: any }) => {
                 />
               ) : (
                 <>
-                  <p className="ml-4 text-black fornt-normal">{message.text}</p>
+                  
                   <div>
                     <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
                       <p className="text-xl text-white text-center font-semibold">
@@ -127,7 +127,7 @@ const Messenger = ({ object }: { object: any }) => {
               <img src={user?.picture} className="w-12 h-12 rounded-full" />
             ) : (
               <>
-                <p className="ml-4 text-black font-normal">{message.text}</p>
+                {/* <p className="ml-4 text-black font-normal">{message.text}</p> */}
                 <div>
                   <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
                     <p className="text-xl text-white text-center font-semibold">
@@ -137,7 +137,7 @@ const Messenger = ({ object }: { object: any }) => {
                 </div>
               </>
             )}
-            {/* <p className="ml-4 text-black font-semibold">{message.text}</p> */}
+            <p className="ml-4 text-black font-semibold">{message.text}</p>
           </div>
         ))}
       </div>
