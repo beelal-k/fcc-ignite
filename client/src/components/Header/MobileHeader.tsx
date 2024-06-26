@@ -44,7 +44,7 @@ const MobileHeader = () => {
                 </button>)
             }
             {
-                user? (<Link to='/messenger' className='relative flex flex-col items-center justify-center w-1/5'>
+                user? (<Link to='/chat' className='relative flex flex-col items-center justify-center w-1/5'>
                     <BsChatText className='text-2xl text-gray-400'/>
                     {user && 
                     <div className="bg-red-500 rounded-full w-3 h-3 absolute top-1 right-7"></div>

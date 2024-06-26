@@ -18,7 +18,7 @@ const AuthSchema = new mongoose.Schema(
     birthday: {
       type: Date,
     },
-    picture:{
+    picture: {
       type: String,
     },
     postalCode: {
@@ -26,6 +26,13 @@ const AuthSchema = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
+    },
+    verificationToken: {
+      type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
     },
     address: {
       type: String,

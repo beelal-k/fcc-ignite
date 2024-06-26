@@ -1,4 +1,3 @@
-"use client";
 import Link from "next/link.js";
 import SearchBar from "./SearchBar";
 import { CgGlobeAlt } from "react-icons/cg";
@@ -9,32 +8,48 @@ import useAuthStore from "@/store/authStore";
 import logo from "@/assets/logo.png";
 import useLanguageStore from "@/store/languageStore";
 import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import Notification from "../notifications";
 
 export default function Header() {
   const { user } = useAuthStore();
   const { language, setLanguage } = useLanguageStore();
   const router = useNavigate();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    if (window.innerWidth < 768) {
+      setIsMobile(true);
+    }
+  }, []);
 
   return (
     <div>
       <div className="bg-white pt-2 flex flex-col ">
-        <header className="flex sm:pb-0 pb-3 px-20 justify-between items-center gap-3  ">
+        <header className="flex sm:pb-0 pb-3 px-10 md:px-20  justify-between items-center gap-3  ">
           <Link href={"/"} className="flex gap-1 md:mb-2 sm:mb-0">
-            <span className="font-semibold md:block mt-auto hidden text-xl">
+            <span className="font-semibold block mt-auto text-xl">
               <img src={logo} className="w-32" alt="" />
             </span>
           </Link>
-          <Link
-            className="whitespace-nowrap ml-auto text-black rounded-full px-4 py-2 hover:bg-gray-100 transition font-medium text-sm duration-300 ease-in-out"
-            href={
-              user ? (user?.businessId ? "/panel" : "/business-form") : "/login"
-            }
-          >
-            Airbnb your home
-          </Link>
+          {!isMobile && (
+            <Link
+              className="whitespace-nowrap ml-auto text-black rounded-full px-4 py-2 hover:bg-gray-100 transition font-medium text-sm duration-300 ease-in-out"
+              href={
+                user
+                  ? user?.businessId
+                    ? "/panel"
+                    : "/business-form"
+                  : "/login"
+              }
+            >
+              Airbnb your home
+            </Link>
+          )}
+
           <div className="flex items-center gap-3">
-            <button
+            {/* <button
               onClick={() => {
                 if (language === "urdu") {
                   setLanguage("en");
@@ -44,7 +59,8 @@ export default function Header() {
               }}
             >
               <CgGlobeAlt size={25} className="text-gray-600 font-medium" />
-            </button>
+            </button> */}
+            <Notification />
             {user ? (
               <div className="flex">
                 <AccountDrawer />
@@ -87,7 +103,7 @@ export default function Header() {
           </div>
         </header>
 
-        {location.pathname === "/" && <SearchBar />}
+        {location.pathname === "/" && !isMobile && <SearchBar />}
 
         <hr />
         <div className="md:block hidden md:px-20">

@@ -43,6 +43,13 @@ const Content = ({ content, item }: Props) => {
     console.log(reviews);
   }, [])
 
+  function averageRating(reviews) {
+    let sum = 0;
+    reviews.forEach((review) => {
+      sum += review.rating;
+    });
+    return parseFloat((sum / reviews.length).toFixed(1));
+  }
 
   return (
     <div className="mt-10 md:mr-12 text-[16px] w-full flex flex-col gap-6">
@@ -64,7 +71,7 @@ const Content = ({ content, item }: Props) => {
             </h2>
             <div className="flex flex-row gap-1 items-center">
               <StarFilledIcon className="size-[18px] text-gray-800" />
-              <p>{reviews.length > 0 ? `${reviews.length} reviews` : "No reviews yet"}</p>
+              <p>{reviews.length > 0 ? `${reviews.length} reviews (${averageRating(reviews)})` : "No reviews yet"}</p>
             </div>
           </span>
           {open.includes(index) && <MarkdownDisplay markdown={item.markdown} />}

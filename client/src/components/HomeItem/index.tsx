@@ -1,12 +1,11 @@
 "use client";
-
-import { format } from "timeago.js";
 import { useNavigate } from "react-router-dom";
 import Wishlist_Icon from "./Wishlist_Icon";
 import useAuthStore from "@/store/authStore";
+import axios from "axios";
 
 const HomeItem = ({ item }: { item: any }) => {
-  const { user } = useAuthStore();
+  const { user , setUser} = useAuthStore();
   const navigate = useNavigate();
 
   const handleWishlist = async (adId: any) => {
@@ -14,11 +13,50 @@ const HomeItem = ({ item }: { item: any }) => {
       navigate("/login");
       return;
     }
-    // await addToWishlist(adId, user, token);
+
+    //     router.post("/wishlist/append/:itemId", verifyToken, appendToWishlist);
+    // router.post("/wishlist/remove/:itemId", verifyToken, removeFromWishlist);
+
+    if (isLiked(adId)) {
+      try {
+        const res = await axios.post(
+          `${import.meta.env.VITE_BASE_URI}/auth/wishlist/remove/${adId}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        let userNew = { ...user, wishlist: user.wishlist.filter((id) => id !== adId) };
+        //@ts-ignore
+        setUser(userNew);
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      try {
+       await axios.post(
+          `${import.meta.env.VITE_BASE_URI}/auth/wishlist/append/${adId}`,
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        let userNew = { ...user, wishlist: [...user.wishlist, adId] };
+        //@ts-ignore
+        setUser(userNew);
+      } catch (error) {
+        console.log(error);
+      }
+    }
   };
 
   const isLiked = (itemId: any) => {
-    return false;
+    //@ts-ignore
+    return user?.wishlist?.includes(itemId);
   };
 
   return (
@@ -55,7 +93,8 @@ const HomeItem = ({ item }: { item: any }) => {
           </div>
         </div>
         <h3 className="text-sm font-light text-gray-500">
-          Hosted by {item.businessId ? item.businessId?.name : item.business?.name}
+          Hosted by{" "}
+          {item.businessId ? item.businessId?.name : item.business?.name}
         </h3>
       </div>
     </div>

@@ -101,8 +101,10 @@ const BusinessForm = () => {
                                             </FormItem>
                                         )}
                                     />
-                                    <Button disabled={loading} className="w-full" type="submit">
-                                        {loading ? <div className="dotFlashing"></div> : <p>Register</p>}
+                                    <Button disabled={loading || user?.isVerified === false} className="w-full" type="submit">
+                                        {loading ? <div className="dotFlashing"></div> : <p>
+                                            {user?.isVerified === false ? "Please verify your email" : "Register"}
+                                            </p>}
                                     </Button>
                                 </form>
                             </div>

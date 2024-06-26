@@ -3,6 +3,7 @@ import CartItem from "../models/cart.js";
 import AuthModel from "../models/Auth.js";
 import { createCheckoutSession, createPrice } from "../utils/stripeActions.js";
 import mongoose from "mongoose";
+import { sendEmail } from "../utils/sendEmail.js";
 
 export const createOrder = async (req, res) => {
   try {
@@ -44,9 +45,21 @@ export const createOrder = async (req, res) => {
       `http://localhost:4000/order/approve/${newOrder._id}/`,
       `http://localhost:5173?payment=failed`
     );
+    const email = {
+      email: user.email,
+      subject: "Order Confirmation",
+      text: `Your order has been placed successfully. Your order id is ${newOrder._id}`,
+    };
+    await sendEmail(email);
+    const notification = {
+      content: `Your order has been placed successfully. Your order id is ${newOrder._id}`,
+      createdAt: Date.now(),
+    };
+    user.notifications.push(notification);
+    await user.save();
     res.status(201).json({ url });
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(409).json({ message: error.message });
   }
 };
@@ -59,7 +72,9 @@ export const approvePayment = async (req, res) => {
     order.order_status = "confirmed";
     await order.save();
     console.log(order);
-    res.redirect(`http://localhost:5173?payment=successfull&orderId=${id}-test`);
+    res.redirect(
+      `http://localhost:5173?payment=successfull&orderId=${id}-test`
+    );
   } catch (error) {
     res.redirect(`http://localhost:5173?payment=failed`);
   }
@@ -125,27 +140,31 @@ export const deleteOrder = async (req, res) => {
 
 export const getOrdersByBusiness = async (req, res) => {
   try {
-    const { businessId } = req.params;
+    console.log(req.params);
+    const businessId = req.params.businessId;
     const orders = await Order.find().populate({
       path: "items.itemId",
       populate: {
         path: "businessId",
       },
-    })
+    });
 
     const businessOrder = [];
 
     orders.forEach((order) => {
       order.items.forEach((item) => {
-        if (item.itemId && item.itemId.businessId === businessId) {
+        if (
+          item.itemId &&
+          item.itemId.businessId._id.toString() === businessId
+        ) {
           businessOrder.push(order);
         }
       });
-    })
+    });
 
     res.status(200).json(businessOrder);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(404).json({ message: error.message });
   }
 };

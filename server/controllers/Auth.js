@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import AuthModel from "../models/Auth.js";
 import dotenv from "dotenv";
+import { sendEmail } from "../utils/sendEmail.js";
 dotenv.config();
 
 export const register = async (req, res) => {
@@ -52,9 +53,47 @@ export const register = async (req, res) => {
       { expiresIn: "10h" }
     );
 
+    // creating a verification token
+    const verificationToken = jwt.sign(
+      { email: user.email, id: user._id },
+      process.env.JWT_SECRET,
+      { expiresIn: "10h" }
+    );
+
+    user.verificationToken = verificationToken;
+    await user.save();
+
+    await sendEmail({
+      email: user.email,
+      subject: "Welcome!",
+      text: `Welcome, ${user.name}. We are glad to have you on board! Please verify your email from the following link:
+        http://localhost:4000/auth/verify/${verificationToken}
+        `,
+    });
+
     res.status(201).json({ user, token });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+};
+
+export const verifyEmail = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const user = await AuthModel.findOne({
+      verificationToken: token,
+    });
+
+    if (!user) {
+      return res.status(404).send("User not found");
+    }
+
+    user.isVerified = true;
+    user.verificationToken = "";
+    await user.save();
+    res.redirect("http://localhost:5173/login");
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -94,6 +133,47 @@ export const login = async (req, res) => {
   }
 };
 
+export const resetPassword = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    // Check if the user exists
+    const user = await AuthModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Validate password
+    const isPasswordCorrect = await bcrypt.compare(
+      oldPassword,
+      user.hashedPassword
+    );
+
+    if (!isPasswordCorrect) {
+      return res.status(400).send("Invalid credentials");
+    }
+
+    // Check if the new passwords match
+    if (newPassword !== confirmNewPassword) {
+      return res.status(400).json({ message: "New passwords do not match" });
+    }
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    user.hashedPassword = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: "Password reset successfully" });
+  } catch (error) {
+    res.status(500).json({
+      message: "An error occurred while trying to reset password",
+      error: error.message,
+    });
+  }
+};
 export const forgotPassword = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -128,7 +208,7 @@ export const getUser = async (req, res) => {
 export const updateUser = async (req, res) => {
   try {
     const { name, picture, preferences } = req.body;
-    console.log(name, picture, preferences)
+    console.log(name, picture, preferences);
     const user = await AuthModel.findById(req.userId);
     if (name) {
       user.name = name;
@@ -162,8 +242,8 @@ export const removeFromWishlist = async (req, res) => {
         (id) => id.toString() !== itemId.toString()
       );
     }
-
     await user.save();
+    res.status(201).json(user.wishlist);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
@@ -182,6 +262,7 @@ export const appendToWishlist = async (req, res) => {
     }
     user.wishlist.push(itemId);
     await user.save();
+    res.status(201).json(user.wishlist);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

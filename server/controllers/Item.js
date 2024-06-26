@@ -120,7 +120,7 @@ export const updateItem = async (req, res) => {
 
 export const getItems = async (req, res) => {
   try {
-    const { region, checkIn, checkOut, guests } = req.query;
+    const { region, checkIn, checkOut, guests, category } = req.query;
     const filter = {};
 
     // Filter by region
@@ -156,7 +156,27 @@ export const getItems = async (req, res) => {
 
     const items = await Item.find(filter).populate("businessId");
 
+    if (category) {
+      const filteredItems = items.filter(
+        (item) => item.category.toLowerCase().replace(/\s+/g, "-") === category
+      );
+      return res.status(200).send(filteredItems);
+    }
+
     res.status(200).send(items);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+export const getItemsByCat = async (req, res) => {
+  try {
+    const { category } = req.params;
+    const items = await Item.find();
+    const filteredItems = items.filter(
+      (item) => item.category.toLowerCase().replace(/\s+/g, "-") === category
+    );
+    res.status(200).send(filteredItems);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

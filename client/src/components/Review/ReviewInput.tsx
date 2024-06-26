@@ -16,6 +16,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
 import useAuthStore from '@/store/authStore';
+import { FaStar } from 'react-icons/fa';
 
 const formSchema = z.object({
     review: z.string().min(8),
@@ -24,6 +25,7 @@ const formSchema = z.object({
 const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) => {
     const { user } = useAuthStore();
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [rating, setRating] = useState(0);
     const { toast } = useToast();
 
 
@@ -50,7 +52,7 @@ const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) =>
             const { review } = values;
             const res = await axios.post(`${import.meta.env.VITE_BASE_URI}/item/review`, {
                 review,
-                rating: 2,
+                rating: rating,
                 itemId: item._id
             }, {
                 headers: {
@@ -88,6 +90,24 @@ const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) =>
             <div>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="mt-5 space-y-4">
+                        <div className="flex flex-row gap-1 items-center">
+                            {Array.from({ length: 5 }).map((_, index: any) => {
+                                const adjustedIndex = index + 1;
+                                return (
+                                    <FaStar
+                                        className={`${adjustedIndex <= rating
+                                            ? "text-primary"
+                                            : "text-gray-400"
+                                            } text-sm`}
+                                        key={adjustedIndex}
+                                        onClick={() => {
+                                            console.log("Clicked", adjustedIndex);
+                                            setRating(adjustedIndex);
+                                        }}
+                                    />
+                                );
+                            })}
+                        </div>
                         <FormField
                             control={form.control}
                             name="review"

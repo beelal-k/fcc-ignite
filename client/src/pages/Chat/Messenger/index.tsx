@@ -62,7 +62,7 @@ const Messenger = ({ object }: { object: any }) => {
         conversationId: object.conversationId,
       });
       setMessages([...messages, { text: message, sender: user?._id }]);
-      const res = await axios.post(
+      await axios.post(
         `${import.meta.env.VITE_BASE_URI}/message/${object.conversationId}`,
         {
           text: message,

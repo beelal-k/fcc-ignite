@@ -5,7 +5,6 @@ import useAuthStore from "@/store/authStore";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { addToCart } from "@/lib/cart";
-import Complaint from "@/components/Complaint/Complaint";
 import LiveChat from "@/components/LiveChat";
 import VideoCall from "@/components/VideoCall";
 import { countDaysBetween } from "@/lib/utils";
@@ -55,8 +54,7 @@ const Booking = ({ item, endDate, startDate, setEndDate, setStartDate }: { item:
 
     if (user?.cart.find((item: any) => item === cartItem.itemId.toString())) {
       toast({
-        title: "Item already in cart",
-        description: "This item is already in cart",
+        title: "Item already in reserved",
         variant: "destructive",
       });
       return;
@@ -67,10 +65,11 @@ const Booking = ({ item, endDate, startDate, setEndDate, setStartDate }: { item:
       const res = await addToCart(cartItem);
       if (res) {
         appendToCart(res._id);
-        toast({
-          title: "Item added to cart",
-          description: "Item added to cart successfully",
-        });
+        navigate("/checkout");
+        // toast({
+        //   title: "Item added to cart",
+        //   description: "Item added to cart successfully",
+        // });
       }
     } catch (error: any) {
       toast({
@@ -107,10 +106,13 @@ const Booking = ({ item, endDate, startDate, setEndDate, setStartDate }: { item:
       </div>
       <button
         onClick={handleAddToCart}
+        disabled={booking || user?.isVerified === false || !user}
         type="button"
         className="bg-[#FF385C] text-white font-semibold py-2 rounded-md"
       >
-        {booking ? "Reserving" : "Reserve"}
+        {booking ? "Reserving" : 
+          user?.isVerified === false ? "Please verify your email" : !user ? "Login to reserve" : "Reserve"
+        }
       </button>
       <p className="text-center text-sm opacity-80">You won't be charged yet</p>
       <div className="flex flex-row items-center justify-between">

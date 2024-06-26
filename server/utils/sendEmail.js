@@ -9,12 +9,12 @@ export const sendEmail = async (email, subject, text) => {
             secure: true,
             service: "gmail",
             auth: {
-                user: "ahmad.itumun@gmail.com",
-                pass: "ldlenweoabmiwlkh",
+                user: "reg.nstraining@gmail.com",
+                pass: "gqig pscg bpmg rsri",
             },
         });
        const a = await transporter.sendMail({
-            from: "ahmad.itumun@gmail.com",
+        from: "reg.nstraining@gmail.com",
             to: email.email,
             subject: email.subject,
             text: email.text,

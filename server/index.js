@@ -3,6 +3,7 @@ import cors from "cors";
 import mongoose from "mongoose";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 import authRoutes from "./routes/authRoutes.js";
 import businessRoutes from "./routes/businessRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
@@ -30,6 +31,14 @@ app.use(
   })
 );
 
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5000,
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
+
+app.use(limiter);
+
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
@@ -45,6 +54,8 @@ io.on("connection", (socket) => {
   socket.emit("me", socket.id);
 
   socket.on("sendMessage", (data) => {
+    console.log(data);
+    console.log(onlineUsers);
     const receiver = onlineUsers.find(
       (user) => user.userId === data.receiverId
     );

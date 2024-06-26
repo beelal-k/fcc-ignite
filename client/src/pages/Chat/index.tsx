@@ -40,8 +40,8 @@ const ChatPage = () => {
             key={ind}
             className="flex hover:bg-gray-200 transition-all duration-200 cursor-pointer items-center p-4 border-b border-gray-200"
           >
-            {conversations.user.picture ? ( <img
-              src={conversations.user.picture ? conversations.user.picture : ""}
+            {conversations.user?.picture ? ( <img
+              src={conversations.user?.picture ? conversations.user?.picture : ""}
               className="w-12 h-12 rounded-full"
             />) : (
               <div>
@@ -49,13 +49,13 @@ const ChatPage = () => {
                   <p
                   className="text-2xl text-white text-center font-semibold"
                   >
-                    {conversations.user.name[0].toUpperCase()}
+                    {conversations.user?.name[0].toUpperCase()}
                   </p>
                 </div>
               </div>
             )}
            
-            <p className="ml-4 font-semibold">{conversations.user.name}</p>
+            <p className="ml-4 font-semibold">{conversations.user?.name}</p>
           </div>
         ))}
       </div>

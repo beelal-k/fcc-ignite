@@ -73,8 +73,7 @@ const Login = () => {
 
   return (
     <Form {...form}>
-      <div className="flex flex-col w-full h-screen items-center justify-center border-black ">
-        <img src="https://images.unsplash.com/photo-1520597191538-5c333fd1c980?q=80&w=1898&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" className="object-cover absolute z-[-10]" />
+      <div className="flex flex-col mt-[-100px]  w-full h-screen items-center justify-center border-black ">
         <div className="p-10 rounded-lg bg-white shadow-sm border">
           <form
             onSubmit={form.handleSubmit(onSubmit)}

@@ -3,6 +3,7 @@ import Icon from "./Icon";
 import Link from "next/link";
 import useAuthStore from "@/store/authStore";
 import { FiMenu } from "react-icons/fi";
+import Notification from "@/components/notifications";
 
 const AccountDrawer = () => {
   const [showPopup, setShowPopup] = useState(false);
@@ -42,14 +43,12 @@ const AccountDrawer = () => {
         {showPopup && (
           <div className="absolute px-2 right-0 top-10 bg-white shadow-md rounded-lg  py-2 mt-4 min-w-[15rem] z-50">
             <Link
-              href="/messenger"
+              href="/chat"
               className="flex items-center gap-2 px-3 text-sm py-2 rounded-lg hover:bg-gray-200"
             >
               Messages
             </Link>
-            <button className="flex items-center bg-white w-full gap-2 px-3 text-sm py-2 rounded-lg hover:bg-gray-200">
-              Notifications
-            </button>
+           
             <Link
               href="/wishlist"
               className="flex items-center gap-2 px-3 text-sm py-2 rounded-lg hover:bg-gray-200"
@@ -61,6 +60,12 @@ const AccountDrawer = () => {
               className="flex items-center gap-2 px-3 text-sm py-2 rounded-lg hover:bg-gray-200"
             >
               Account
+            </Link>
+            <Link 
+              href={"/reset-password"}
+              className="flex items-center gap-2 px-3 text-sm py-2 rounded-lg hover:bg-gray-200"
+            >
+              Reset Password
             </Link>
             <div
               onClick={handleSignOut}

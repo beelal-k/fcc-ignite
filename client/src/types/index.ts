@@ -8,6 +8,7 @@ type User = {
     cart: [],
     wishlist: [],
     notifications: [],
+    isVerified: boolean;
     picture: string,
     createdAt: string;
     updatedAt: string;
