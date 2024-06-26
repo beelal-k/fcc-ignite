@@ -165,7 +165,11 @@ export const resetPassword = async (req, res) => {
     // Update the user's password
     user.hashedPassword = hashedPassword;
     await user.save();
-
+    await sendEmail({
+      email: user.email,
+      subject: "Password Reset",
+      text: `Your password has been reset successfully.`,
+    });
     res.status(200).json({ message: "Password reset successfully" });
   } catch (error) {
     res.status(500).json({

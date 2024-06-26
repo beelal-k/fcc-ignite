@@ -1,4 +1,6 @@
 import Message from "../models/Message.js";
+import { sendEmail } from "../utils/sendEmail.js";
+
 
 export const createMessage = async (req, res) => {
     try {
