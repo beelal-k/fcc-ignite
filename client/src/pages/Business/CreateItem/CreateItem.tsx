@@ -111,7 +111,7 @@ const CreateItem = () => {
       if (error.response.data) {
         return toast({
           title: "An error occurred",
-          // description: error.response.data,
+          description: typeof error.response.data ? error.response.data : "An error occurred while creating the item",
           variant: "destructive",
         });
       }

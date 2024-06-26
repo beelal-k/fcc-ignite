@@ -2,6 +2,32 @@ import Item from "../models/ItemModel.js";
 import AuthModel from "../models/Auth.js";
 import dotenv from "dotenv";
 dotenv.config();
+import AWS from 'aws-sdk';
+
+dotenv.config();
+
+AWS.config.update({
+  accessKeyId: "AKIAU6GD3RAELOA5UNNQ",
+  secretAccessKey: "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",
+  region: 'us-east-1'
+});
+
+const comprehend = new AWS.Comprehend();
+
+export const moderateContent = async (text) => {
+  const params = {
+    TextList: [text],
+    LanguageCode: 'en'
+  };
+
+  const data = await comprehend.batchDetectSentiment(params).promise();
+  const sentiment = data.ResultList[0].SentimentScore;
+
+  if (sentiment.Negative > 0.5) {
+    return false;
+  }
+  return true;
+};
 
 export const createItem = async (req, res) => {
   const userId = req.userId;
@@ -24,6 +50,12 @@ export const createItem = async (req, res) => {
     availableDates,
     personsCapacity,
   } = req.body;
+
+  const isContentSafe = await moderateContent(title);
+  if (!isContentSafe) {
+    return res.status(400).send("Content is not safe");
+  }
+
   if (
     !title ||
     !category ||

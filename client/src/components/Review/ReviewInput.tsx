@@ -17,6 +17,7 @@ import { useForm } from 'react-hook-form';
 import { Textarea } from '@/components/ui/textarea';
 import useAuthStore from '@/store/authStore';
 import { FaStar } from 'react-icons/fa';
+import Loader from '../Loader/Loader';
 
 const formSchema = z.object({
     review: z.string().min(8),
@@ -126,7 +127,7 @@ const ReviewInput = ({ getReview, item }: { getReview: any, item: ItemType }) =>
                             )}
                         />
                         <Button type="submit" disabled={user ? false : true} className='bg-transparent border border-black hover:text-white hover:bg-black text-black mr-auto'>
-                            {isSubmitting ? "Submitting..." : "Submit"}
+                            {isSubmitting ? <Loader size={15} color='white' /> : "Submit"}
                         </Button>
                     </form>
                 </Form>

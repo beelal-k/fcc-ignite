@@ -89,22 +89,21 @@ const Messenger = ({ object }: { object: any }) => {
       //@ts-ignore
       messagesContainerRef.current.scrollTo({
         top: scrollHeight - clientHeight,
-        behavior: 'smooth', 
+        behavior: 'smooth',
       });
     }
   }, [messages]);
-  
+
   return (
-    <div className="w-3/4 flex flex-col px-16 ">
-      <div 
-      ref={messagesContainerRef}
-      className="h-[400px] overflow-y-auto">
+    <div className="w-full flex flex-col px-16 ">
+      <div
+        ref={messagesContainerRef}
+        className="h-[350px] overflow-y-auto custom-scroll">
         {messages.map((message: any, ind: number) => (
           <div
             key={ind}
-            className={`flex transition-all duration-200 items-center p-4 border-b border-gray-200 ${
-              message.sender !== user?._id ? "justify-start" : "justify-end"
-            }`}
+            className={`flex transition-all duration-200 items-center gap-2 p-4 border-b border-gray-200 ${message.sender !== user?._id ? "justify-start" : "justify-end"
+              }`}
           >
             {message.sender !== user?._id ? (
               object.user.picture ? (
@@ -113,27 +112,32 @@ const Messenger = ({ object }: { object: any }) => {
                   className="w-12 h-12 rounded-full"
                 />
               ) : (
-                <div>
-                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
-                    <p className="text-2xl text-white text-center font-semibold">
-                      {object.user?.name[0].toUpperCase()}
-                    </p>
+                <>
+                  <p className="ml-4 text-black fornt-normal">{message.text}</p>
+                  <div>
+                    <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                      <p className="text-xl text-white text-center font-semibold">
+                        {object.user?.name[0].toUpperCase()}
+                      </p>
+                    </div>
                   </div>
-                </div>
+                </>
               )
             ) : user?.picture ? (
               <img src={user?.picture} className="w-12 h-12 rounded-full" />
             ) : (
-              <div>
-                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
-                  <p className="text-2xl text-white text-center font-semibold">
-                    {user?.name[0].toUpperCase()}
-                  </p>
+              <>
+                <p className="ml-4 text-black font-normal">{message.text}</p>
+                <div>
+                  <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+                    <p className="text-xl text-white text-center font-semibold">
+                      {user?.name[0].toUpperCase()}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
-
-            <p className="ml-4 text-black font-semibold">{message.text}</p>
+            {/* <p className="ml-4 text-black font-semibold">{message.text}</p> */}
           </div>
         ))}
       </div>
