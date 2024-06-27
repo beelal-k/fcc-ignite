@@ -6,13 +6,10 @@ import AWS from 'aws-sdk';
 
 dotenv.config();
 
-AWS.config.update({
-  accessKeyId: "AKIAU6GD3RAELOA5UNNQ",
-  secretAccessKey: "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",
-  region: 'us-east-1'
-});
 
-const comprehend = new AWS.Comprehend();
+
+// const comprehend = new AWS.Comprehend();
+// SECRET REMOVED
 
 export const moderateContent = async (text) => {
   const params = {
